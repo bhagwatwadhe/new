@@ -1,0 +1,101 @@
+
+Adder:-
+import java.rmi.*;  
+    public interface Adder extends Remote{  
+   	 public int add(int x,int y)throws RemoteException;  
+	  public int sub(int x,int y)throws RemoteException;  
+	public int mul(int x,int y)throws RemoteException;  
+	public int div(int x,int y)throws RemoteException;
+	public String concatp(String a,String b)throws RemoteException;
+    }  
+
+
+AdderRemote:-
+  import java.rmi.*;  
+    import java.rmi.server.*;  
+    public class AdderRemote extends UnicastRemoteObject implements Adder{  
+    AdderRemote()throws RemoteException{  
+    super();  
+    }  
+   	 public int add(int x,int y){return x+y;}  
+	 public int sub(int x,int y){return x-y;}  
+	public int mul(int x,int y){return x*y;} 
+	public int div(int x,int y){return x/y;}
+	public String concatp(String a,String b){return a+b;}   
+    }  
+
+
+MyClient:-
+ import java.rmi.*;  
+    import java.io.*;  
+import java.util.Scanner;  
+    public class MyClient{  
+    public static void main(String args[]){  
+    try{  
+    Adder stub=(Adder)Naming.lookup("rmi://localhost:5000/sonoo"); 
+	Scanner scanner = new Scanner( System.in );
+	System.out.println("Enter NO1:"); 
+	int x = scanner.nextInt();
+	System.out.println("Enter NO2:"); 
+	int y = scanner.nextInt();
+	System.out.println("Addition is:"); 
+    	System.out.println(stub.add(x,y));  
+	System.out.println("Subtraction is:"); 
+	System.out.println(stub.sub(x,y)); 
+	System.out.println("Multiplication is:"); 
+	System.out.println(stub.mul(x,y)); 
+	System.out.println("Division is:"); 
+	System.out.println(stub.div(x,y)); 
+	InputStreamReader r=new InputStreamReader(System.in);    
+   	 BufferedReader br=new BufferedReader(r);   
+	System.out.println("String 1:"); 
+	   String a=br.readLine(); 
+	System.out.println("String 2:");   
+	    String b=br.readLine();     
+	 System.out.println(stub.concatp(a,b)); 
+    }catch(Exception e){}  
+    }  
+    }  
+
+MyServer:-
+ import java.rmi.*;  
+    import java.rmi.registry.*;  
+    public class MyServer{  
+    public static void main(String args[]){  
+    try{  
+    Adder stub=new AdderRemote();  
+    Naming.rebind("rmi://localhost:5000/sonoo",stub);  
+    }catch(Exception e){System.out.println(e);}  
+    }  
+    }  
+
+OUTPUT:
+
+C:\Java\jdk1.7.0_02\bin>javac MyClient.java
+
+C:\Java\jdk1.7.0_02\bin>javac MyServer.java
+
+C:\Java\jdk1.7.0_02\bin>rmic AdderRemote
+
+C:\Java\jdk1.7.0_02\bin>rmiregistry 5000
+
+C:\Java\jdk1.7.0_02\bin>java MyServer
+
+C:\Java\jdk1.7.0_02\bin>java MyClient
+Enter NO1:
+34
+Enter NO2:
+4
+Addition is:
+38
+Subtraction is:
+30
+Multiplication is:
+136
+Division is:
+8
+String 1:
+pari
+String 2:
+neeta
+parineeta

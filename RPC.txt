@@ -1,0 +1,237 @@
+
+
+/***************abc.x***********/
+
+struct opr_in
+{
+	long num1;
+	long num2;
+	char num_i[20];
+};
+
+struct opr_out
+{
+	long ans;
+	char nm_o[20];
+};
+
+program arith
+{
+	version arith_ver
+	{
+		opr_out arith_fact(opr_in)=1;
+		opr_out arith_add(opr_in)=2;
+		opr_out arith_sub(opr_in)=3;
+		opr_out arith_mul(opr_in)=4;
+		opr_out arith_div(opr_in)=5;
+		
+	}=1;
+}=0x03051406;
+
+/***********client.c**************/
+
+#include "stdio.h"
+#include "abc.h"
+#include "string.h"
+
+int main(int argc,char **argv)
+{
+	CLIENT *c;
+	opr_in ip;
+	opr_out *op;
+	long int n1,n2,ch,len,i=1,f=1;
+	char str[20],ans;
+	c=clnt_create(argv[1],arith,arith_ver,"TCP");
+
+	do{
+	
+		printf("**********MENU**********\n 1)Factorial\n2)Addition\n3)Subtraction\n4)Multiplication\n5)Division");
+		printf("Enter your choice:");
+		scanf("%ld",&ch);
+		switch(ch)
+		{
+			case 1:
+				printf("Enter a number to find factorial:\n");
+				scanf("%ld",&n1);
+				ip.num1=n1;
+				if((op=arith_fact_1(&ip,c))!=NULL)
+				printf("\n%ld!=%1ld\n",ip.num1,op->ans);
+			break;
+
+			case 2:
+				printf("Enter two number to calculate Addition:\n");
+				scanf("%ld%ld",&n1,&n2);
+				ip.num1=n1;
+				ip.num2=n2;
+				if((op=arith_add_1(&ip,c))!=NULL)
+				printf("\n%ld + %ld=%1ld\n",n1,n2,op->ans);
+			break;
+
+			case 3:
+				printf("Enter two number to calculate Subtraction:\n");
+				scanf("%ld%ld",&n1,&n2);
+				ip.num1=n1;
+				ip.num2=n2;
+				if((op=arith_sub_1(&ip,c))!=NULL)
+				printf("\n%ld - %ld=%1ld\n",n1,n2,op->ans);
+			break;
+
+			case 4:
+				printf("Enter two number to calculate Multiplication:\n");
+				scanf("%ld%ld",&n1,&n2);
+				ip.num1=n1;
+				ip.num2=n2;
+				if((op=arith_mul_1(&ip,c))!=NULL)
+				printf("\n%ld * %ld=%1ld\n",n1,n2,op->ans);
+			break;
+
+			case 5:
+				printf("Enter two number to calculate Division:\n");
+				scanf("%ld%ld",&n1,&n2);
+				ip.num1=n1;
+				ip.num2=n2;
+				if((op=arith_div_1(&ip,c))!=NULL)
+				printf("\n%ld / %ld=%1ld\n",n1,n2,op->ans);
+			break;
+			default:
+				printf("Please enter correct choice");
+		}
+		printf("\nDo you wish to continue? If yes,press\'Y\'");
+		scanf("%s",&ans);
+	}
+	while(ans=='y'|| ans=='Y');
+}
+
+
+/*******************Server.c*******************/
+
+#include "abc.h"
+
+
+opr_out* arith_fact_1_svc(opr_in* input,struct svc_req* rqstp)
+{
+	static opr_out ot;
+	int i=1,f=1;
+	for(i=1;i<=input->num1;i++)
+	f=f*i;
+	ot.ans=f;
+	return(&ot);
+}
+
+opr_out* arith_add_1_svc(opr_in* input,struct svc_req* rqstp)
+{
+	static opr_out ot;
+	int sum=input->num1 + input->num2;
+	ot.ans=sum;
+	return(&ot);
+}
+
+opr_out* arith_sub_1_svc(opr_in* input,struct svc_req* rqstp)
+{
+	static opr_out ot;
+	int sub=input->num1 - input->num2;
+	ot.ans=sub;
+	return(&ot);
+}
+
+opr_out* arith_mul_1_svc(opr_in* input,struct svc_req* rqstp)
+{
+	static opr_out ot;
+	int mul=input->num1 * input->num2;
+	ot.ans=mul;
+	return(&ot);
+}
+
+opr_out* arith_div_1_svc(opr_in* input,struct svc_req* rqstp)
+{
+	static opr_out ot;
+	int div=input->num1 / input->num2;
+	ot.ans=div;
+	return(&ot);
+}
+
+/**OUTPUT
+student@student-HP-Pro-3330-MT:~$ rpcgen -C abc.x
+student@student-HP-Pro-3330-MT:~$ cc -c server.c -o server.o
+student@student-HP-Pro-3330-MT:~$ cc -c abc_xdr.c -o abc_xdr.o
+student@student-HP-Pro-3330-MT:~$ gcc -o server.out server.c abc_svc.c -lnsl abc_xdr.c -lnsl
+student@student-HP-Pro-3330-MT:~$ gcc -o server.out server.c abc_svc.c -lnsl abc_xdr.c -lnsl
+student@student-HP-Pro-3330-MT:~$ ./server.out
+
+
+student@student-HP-Pro-3330-MT:~$ rpcgen -C abc.x
+student@student-HP-Pro-3330-MT:~$ cc -c client.c -o client.o
+student@student-HP-Pro-3330-MT:~$ cc -c abc_clnt.c -o abc_clnt.o
+student@student-HP-Pro-3330-MT:~$ cc -c abc_xdr.c -o abc_xdr.o
+student@student-HP-Pro-3330-MT:~$ gcc -o client.out client.c abc_clnt.c -lnsl abc_xdr.c -lnsl
+student@student-HP-Pro-3330-MT:~$ gcc -o client.out client.c abc_clnt.c -lnsl abc_xdr.c -lnsl
+student@student-HP-Pro-3330-MT:~$ ./client.out localhost
+**********MENU**********
+ 1)Factorial
+2)Addition
+3)Subtraction
+4)Multiplication
+5)DivisionEnter your choice:1
+Enter a number to find factorial:
+5
+
+5!=120
+
+Do you wish to continue? If yes,press'Y'y
+**********MENU**********
+ 1)Factorial
+2)Addition
+3)Subtraction
+4)Multiplication
+5)DivisionEnter your choice:2
+Enter two number to calculate Addition:
+20
+10
+
+20 + 10=30
+
+Do you wish to continue? If yes,press'Y'y
+**********MENU**********
+ 1)Factorial
+2)Addition
+3)Subtraction
+4)Multiplication
+5)DivisionEnter your choice:3
+Enter two number to calculate Subtraction:
+20
+4
+
+20 - 4=16
+
+Do you wish to continue? If yes,press'Y'y
+**********MENU**********
+ 1)Factorial
+2)Addition
+3)Subtraction
+4)Multiplication
+5)DivisionEnter your choice:4
+Enter two number to calculate Multiplication:
+2
+3
+
+2 * 3=6
+
+Do you wish to continue? If yes,press'Y'y
+**********MENU**********
+ 1)Factorial
+2)Addition
+3)Subtraction
+4)Multiplication
+5)DivisionEnter your choice:5
+Enter two number to calculate Division:
+34
+2
+
+34 / 2=17
+
+Do you wish to continue? If yes,press'Y'n 
+student@student-HP-Pro-3330-MT:~$ 
+
+
+*/
+
